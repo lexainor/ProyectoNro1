@@ -7,11 +7,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: php-actions/composer@v6
+      - name: Fix Git ownership issue
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
-      - name: PHPUnit Tests
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run PHPUnit Tests
         uses: php-actions/phpunit@master
         with:
           bootstrap: vendor/autoload.php
